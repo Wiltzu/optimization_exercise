@@ -43,10 +43,11 @@ def get_cities(data):
 	return set(cities)
 
 	
-def all_tours(cities):	
-    start = first(cities)
-    return [[start] + list(tour)
-            for tour in itertools.permutations(cities - {start})]
+def all_tours(cities):
+	"""(n-1)! different permutations"""
+	start = first(cities)
+	return [[start] + list(tour)
+	    for tour in itertools.permutations(cities - {start})]
 
 def first(collection):
     for x in collection: return x
@@ -62,6 +63,8 @@ def distance(cityA, cityB):
 	if distance == 0:
 		distance = abs(cityA.point - cityB.point)
 		_DISTANCE_MATRIX[cityA.number][cityB.number] = distance
+		# distance is symmetric 
+		_DISTANCE_MATRIX[cityB.number][cityA.number] = distance
 	return distance
 
 def random_cities(n):
@@ -112,15 +115,19 @@ def main():
 		_DISTANCE_MATRIX.append([0]*len(cities))
 	
 	start_time = time.clock()
+	tour = None
 	if len(cities) <= 10:
 		tour = bruteforce_solve(cities)
 	else:
 		_LOGGER.info(" There are more than 10 cities.")
-
 	end_time = time.clock()
-	plot_tour(tour)
-	print("{} city lenght tour; total distance = {:.2f}; time = {:.3f} secs".format(
-          len(tour), total_distance(tour), end_time-start_time))
+
+	if tour:
+		print("{} city lenght tour; total distance = {:.2f}; time = {:.3f} secs".format(
+			len(tour), total_distance(tour), end_time-start_time))
+		plot_tour(tour)
+	else:
+		_LOGGER.info(" Tour was not calculated.")
 
 
 if __name__ == '__main__':
