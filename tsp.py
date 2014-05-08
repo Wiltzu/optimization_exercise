@@ -3,6 +3,9 @@ import numpy as np
 import logging
 import sys
 import random
+import time
+import matplotlib
+import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.INFO)
 _LOGGER = logging.getLogger(' tsp ')
@@ -64,6 +67,24 @@ def distance(cityA, cityB):
 def random_cities(n):
 	return set(City(c, random.randrange(10, 800), random.randrange(10, 500)) for c in range(n))
 
+### TOUR PLOTTING ###
+
+def plot_tour(tour):
+    """Plot the resulting tour."""
+    # Plot the tour as blue lines between blue circles, and the starting city as a red square.
+    plotline(list(tour) + [tour[0]])
+    plotline([tour[0]], 'rs')
+    plt.show()
+    
+def plotline(cities, style='bo-'):
+    "Plot a list of points (complex numbers) in the 2-D plane."
+    X, Y = XY(cities)
+    plt.plot(X, Y, style)
+    
+def XY(cities):
+    "Given a list of points, return two lists: X coordinates, and Y coordinates."
+    return [p.x for p in cities], [p.y for p in cities]
+
 ### SOLVERS ###
 
 def bruteforce_solve(cities):
@@ -90,9 +111,16 @@ def main():
 	for i in range(len(cities)):
 		_DISTANCE_MATRIX.append([0]*len(cities))
 	
+	start_time = time.clock()
 	if len(cities) <= 10:
-		optimal_tour = bruteforce_solve(cities)
-		print(total_distance(optimal_tour))
+		tour = bruteforce_solve(cities)
+	else:
+		_LOGGER.info(" There are more than 10 cities.")
+
+	end_time = time.clock()
+	plot_tour(tour)
+	print("{} city lenght tour; total distance = {:.2f}; time = {:.3f} secs".format(
+          len(tour), total_distance(tour), end_time-start_time))
 
 
 if __name__ == '__main__':
