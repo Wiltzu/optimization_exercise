@@ -12,8 +12,6 @@ _LOGGER = logging.getLogger(' tsp ')
 
 random.seed('seed')
 
-_DISTANCE_MATRIX = []
-
 ### DOMAIN CLASSES ###
 
 class Point(complex): pass
@@ -58,14 +56,9 @@ def total_distance(tour):
 def distance(cityA, cityB):
 	if cityA == cityB:
 		return 0
+	else:
+		return abs(cityA.point - cityB.point)
 
-	distance = _DISTANCE_MATRIX[cityA.number][cityB.number]
-	if distance == 0:
-		distance = abs(cityA.point - cityB.point)
-		_DISTANCE_MATRIX[cityA.number][cityB.number] = distance
-		# distance is symmetric 
-		_DISTANCE_MATRIX[cityB.number][cityA.number] = distance
-	return distance
 
 def random_cities(n):
 	return set(City(c, random.randrange(10, 800), random.randrange(10, 500)) for c in range(n))
@@ -145,9 +138,6 @@ def main():
 	else:
 		_LOGGER.error(" Give TSPLIB data 'filename' as parameter OR 'random' with its data size.")
 		sys.exit(-1)
-
-	for i in range(len(cities)):
-		_DISTANCE_MATRIX.append([0]*len(cities))
 	
 	start_time = time.clock()
 	tour = None
