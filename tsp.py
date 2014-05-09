@@ -70,6 +70,10 @@ def distance(cityA, cityB):
 def random_cities(n):
 	return set(City(c, random.randrange(10, 800), random.randrange(10, 500)) for c in range(n))
 
+def ascending_order(edges):
+	edges.sort(key=lambda (A, B): distance(A, B))
+	return edges
+
 ### TOUR PLOTTING ###
 
 def plot_tour(tour):
@@ -96,10 +100,34 @@ def bruteforce_solve(cities):
 
 def nearest_merger(cities):
 	N = len(cities)
-	edges = [(A, B) for A in cities for B in cities if A is not B]
-	# sort by lenght
-	edges.sort(key=lambda (A, B): distance(A, B))
-	print(edges)
+	
+	edges = ascending_order([(A, B) for A in cities for B in cities if A is not B])
+	# partial tours containing city C
+	partial_tours = {C: [C] for C in cities}
+	for (A, B) in edges:
+		join_partial_tours(partial_tours, A, B)
+		if len(partial_tours[A]) == len(cities):
+			return partial_tours[A]
+
+def join_partial_tours(partial_tours, A, B):
+	partial_tourA = partial_tours[A]
+	partial_tourB = partial_tours[B]
+	ptA_ending_edge = (partial_tourA[0], partial_tourA[-1])
+	ptB_ending_edge = (partial_tourB[0], partial_tourB[-1])
+
+	# partial tours are not connected AND
+	# A and B are in the end or start of partial tour because the order must remain
+	if partial_tourA is not partial_tourB and A in ptA_ending_edge and B in ptB_ending_edge:
+		#arrange that partial tour A ends with city A and partial tour B ends with B
+		if partial_tourA[0] == A: 
+			partial_tourA.reverse()
+		if partial_tourB[-1] == B:
+			partial_tourB.reverse()
+		partial_tourA += partial_tourB
+		for city in partial_tourB:
+			partial_tours[city] = partial_tourA
+		return partial_tourB
+
 
 ### MAIN METHOD ###
 
@@ -127,7 +155,7 @@ def main():
 		tour = bruteforce_solve(cities)
 	else:
 		_LOGGER.info(" There are more than 10 cities.")
-		nearest_merger(cities)
+		tour = nearest_merger(cities)
 	end_time = time.clock()
 
 	if tour:
