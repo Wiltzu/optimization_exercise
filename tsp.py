@@ -94,7 +94,8 @@ def bruteforce_solve(cities):
 def nearest_merger(cities):
 	N = len(cities)
 	
-	edges = ascending_order([(A, B) for A in cities for B in cities if A is not B])
+	edges = ascending_order([(A, B) for A in cities for B in cities if abs(A.point) < abs(B.point)])
+	print(len(edges))
 	# partial tours containing city C
 	partial_tours = {C: [C] for C in cities}
 	for (A, B) in edges:
