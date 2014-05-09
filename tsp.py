@@ -88,11 +88,18 @@ def XY(cities):
     "Given a list of points, return two lists: X coordinates, and Y coordinates."
     return [p.x for p in cities], [p.y for p in cities]
 
-### SOLVERS ###
+### GREEDY SOLVERS ###
 
 def bruteforce_solve(cities):
 	tours = all_tours(cities)
 	return min(tours, key=total_distance)
+
+def nearest_merger(cities):
+	N = len(cities)
+	edges = [(A, B) for A in cities for B in cities if A is not B]
+	# sort by lenght
+	edges.sort(key=lambda (A, B): distance(A, B))
+	print(edges)
 
 ### MAIN METHOD ###
 
@@ -120,6 +127,7 @@ def main():
 		tour = bruteforce_solve(cities)
 	else:
 		_LOGGER.info(" There are more than 10 cities.")
+		nearest_merger(cities)
 	end_time = time.clock()
 
 	if tour:
