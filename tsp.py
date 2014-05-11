@@ -122,6 +122,20 @@ def join_partial_tours(partial_tours, A, B):
 			partial_tours[city] = partial_tourA
 		return partial_tourB
 
+### Local Search ###
+def two_opt(tour):
+	edges = [(i, i+1) for i in range(len(tour)-1)]
+	for a, b in edges:
+		for c, d in edges:
+			if a not in [c, d] and b not in [c, d]:
+				A, B, C, D = tour[a], tour[b], tour[c], tour[d]
+				if distance(A, C) + distance(B, D) < distance(A, B) + distance(C, D):
+					tour[b], tour[c] = C, B
+					print('(%s,%s) > (%s,%s)' % (a,b,c,d))
+					print(D)
+					return tour
+	return tour
+
 
 ### MAIN METHOD ###
 
@@ -153,6 +167,14 @@ def main():
 		print("{} city lenght tour; total distance = {:.2f}; time = {:.3f} secs".format(
 			len(tour), total_distance(tour), end_time-start_time))
 		plot_tour(tour)
+		
+		start_time = time.clock()
+		_2opt = two_opt(tour)
+		end_time = time.clock()
+		
+		print("After 2-Opt: total distance = {:.2f}, time = {:.3f} secs".format(
+			total_distance(_2opt), end_time-start_time))
+		plot_tour(_2opt)
 	else:
 		_LOGGER.info(" Tour was not calculated.")
 
