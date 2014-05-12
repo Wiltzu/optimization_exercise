@@ -123,7 +123,7 @@ def join_partial_tours(partial_tours, A, B):
 
 ### Local Search ###
 
-def two_opt(tour, max_iterations=100, min_improvement_percent=0.0005):
+def two_opt(tour, max_iterations=100, min_improvement_percent=0.0005):	
 	improved = True
 	iteration = 0
 	while improved and iteration <= max_iterations:
@@ -191,9 +191,12 @@ def main():
 			distance_before, end_time-start_time))
 		plot_tour(tour)
 
-		print("Improving tour with local search...")
+		min_improvement_percent = 0.0005
+		max_iterations = 100
+		print("Improving tour with local search with \nminimum improvement percent {} and maximum number of iterations {}...".format(
+			min_improvement_percent, max_iterations))
 		start_time = time.clock()
-		_2opt = two_opt(tour, min_improvement_percent=0.0005)
+		_2opt = two_opt(tour, max_iterations, min_improvement_percent)
 		end_time = time.clock()
 		
 		print("2-Opt took {:.3f} secs".format(end_time-start_time))
