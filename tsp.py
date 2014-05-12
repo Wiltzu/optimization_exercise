@@ -95,7 +95,6 @@ def nearest_merger(cities):
 	N = len(cities)
 	
 	edges = ascending_order([(A, B) for A in cities for B in cities if abs(A.point) < abs(B.point)])
-	print(len(edges))
 	# partial tours containing city C
 	partial_tours = {C: [C] for C in cities}
 	for (A, B) in edges:
@@ -123,6 +122,7 @@ def join_partial_tours(partial_tours, A, B):
 		return partial_tourB
 
 ### Local Search ###
+
 def two_opt(tour, max_iterations=100, min_improvement_percent=0.0005):
 	improved = True
 	iteration = 0
@@ -148,6 +148,7 @@ def improve(tour, min_improvement_percent):
 				else:
 					print('tour improved by %s' % (total_distance_before - total_distance_after))
 					return True
+		#drop 1st edge because all its pairs have been explored
 		edges.pop(0)
 
 
@@ -170,32 +171,37 @@ def main():
 		_LOGGER.error(" Give TSPLIB data 'filename' as parameter OR 'random' with its data size.")
 		sys.exit(-1)
 	
-	start_time_before = time.clock()
+	number_of_cities = len(cities)
+	print("%s city tour" % number_of_cities)
+
+	start_time = time.clock()
 	tour = None
-	if len(cities) <= 10:
+	if number_of_cities <= 10:
+		_LOGGER.info(" There are 10 or less cities, so let's use brute-force algorithm.")
 		tour = bruteforce_solve(cities)
 	else:
-		_LOGGER.info(" There are more than 10 cities.")
+		_LOGGER.info(" There are more than 10 cities, so let's use nearest merger algorithm.")
 		tour = nearest_merger(cities)
-	end_time_before = time.clock()
+	end_time = time.clock()
 
 	if tour:
 		distance_before = total_distance(tour)
 
+		print("Construction algorithm: total distance = {:.2f}; time = {:.3f} secs".format(
+			distance_before, end_time-start_time))
 		plot_tour(tour)
 
+		print("Improving tour with local search...")
 		start_time = time.clock()
-		_2opt = two_opt(tour, 0.05)
+		_2opt = two_opt(tour, min_improvement_percent=0.0005)
 		end_time = time.clock()
 		
-		print("{} city lenght tour; total distance = {:.2f}; time = {:.3f} secs".format(
-			len(tour), distance_before, end_time_before-start_time_before))
-
-		print("After 2-Opt: {} city tour, total distance = {:.2f}, time = {:.3f} secs".format(
-			len(tour), total_distance(_2opt), end_time-start_time))
+		print("2-Opt took {:.3f} secs".format(end_time-start_time))
+		print("Before 2-opt: total distance = {:.2f} \nAfter  2-Opt: total distance = {:.2f}".format(
+			distance_before, total_distance(_2opt)))
 		plot_tour(_2opt)
 	else:
-		_LOGGER.info(" Tour was not calculated.")
+		_LOGGER.error(" Tour was not calculated.")
 
 
 if __name__ == '__main__':
