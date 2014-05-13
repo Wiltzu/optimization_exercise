@@ -136,7 +136,7 @@ def improve(tour, min_improvement_percent):
 	total_distance_before = total_distance(tour)
 	minimum_improvement =  total_distance_before * min_improvement_percent
 	edges = [(i, i+1) for i in range(len(tour)-1)]
-	edges.append((0, len(tour)-1))
+	edges.append((len(tour)-1, 0))
 	for a, b in edges:
 		for c, d in edges:
 			if a not in [c, d] and b not in [c, d]:
@@ -191,7 +191,7 @@ def main():
 			distance_before, end_time-start_time))
 		plot_tour(tour)
 
-		min_improvement_percent = 0.0005
+		min_improvement_percent = 0.00001
 		max_iterations = 100
 		print("Improving tour with local search with \nminimum improvement percent {} and maximum number of iterations {}...".format(
 			min_improvement_percent, max_iterations))
