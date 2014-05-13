@@ -38,7 +38,7 @@ def get_cities(data):
 			number, x, y = line.strip().split(' ')
 			cities.append(City(int(number), float(x), float(y)))
 
-	return set(cities)
+	return cities
 
 	
 def all_tours(cities):
@@ -157,6 +157,7 @@ def improve(tour, min_improvement_percent):
 ### MAIN METHOD ###
 
 def main():
+	cities, tour = None, None
 	if len(sys.argv) > 1:
 		if sys.argv[1] == 'random':
 			if sys.argv[2]:
@@ -165,47 +166,63 @@ def main():
 				_LOGGER.error(" If random is used size of data must be given also like 'random 10'")
 				sys.exit(-1)
 		else:
-			f = open(sys.argv[1])
-			cities = get_cities(f.readlines())
+			filename = sys.argv[1]
+			tour_filename = filename.replace(".tsp", ".tour")
+			try:
+				tour_file = open(tour_filename)
+				_LOGGER.info(" importing precalculated tour from file.")
+				tour = get_cities(tour_file.readlines())
+			except IOError, e:
+				tsp_file = open(filename)
+				cities = set(get_cities(tsp_file.readlines()))
 	else:
 		_LOGGER.error(" Give TSPLIB data 'filename' as parameter OR 'random' with its data size.")
 		sys.exit(-1)
 	
-	number_of_cities = len(cities)
+	number_of_cities = len(cities) if cities else len(tour)
 	print("%s city tour" % number_of_cities)
+	
+	if tour == None:
+		start_time = time.clock()
+		if number_of_cities <= 10:
+			_LOGGER.info(" There are 10 or less cities, so let's use brute-force algorithm.")
+			tour = bruteforce_solve(cities)
+		else:
+			_LOGGER.info(" There are more than 10 cities, so let's use nearest merger algorithm.")
+			tour = nearest_merger(cities)
+		end_time = time.clock()
 
-	start_time = time.clock()
-	tour = None
-	if number_of_cities <= 10:
-		_LOGGER.info(" There are 10 or less cities, so let's use brute-force algorithm.")
-		tour = bruteforce_solve(cities)
-	else:
-		_LOGGER.info(" There are more than 10 cities, so let's use nearest merger algorithm.")
-		tour = nearest_merger(cities)
-	end_time = time.clock()
-
-	if tour:
-		distance_before = total_distance(tour)
-
+		distance_before =total_distance(tour)
 		print("Construction algorithm: total distance = {:.2f}; time = {:.3f} secs".format(
 			distance_before, end_time-start_time))
-		plot_tour(tour)
-
-		min_improvement_percent = 0.00001
-		max_iterations = 100
-		print("Improving tour with local search with \nminimum improvement percent {} and maximum number of iterations {}...".format(
-			min_improvement_percent, max_iterations))
-		start_time = time.clock()
-		_2opt = two_opt(tour, max_iterations, min_improvement_percent)
-		end_time = time.clock()
-		
-		print("2-Opt took {:.3f} secs".format(end_time-start_time))
-		print("Before 2-opt: total distance = {:.2f} \nAfter  2-Opt: total distance = {:.2f}".format(
-			distance_before, total_distance(_2opt)))
-		plot_tour(_2opt)
 	else:
-		_LOGGER.error(" Tour was not calculated.")
+		distance_before = total_distance(tour)
+		print("Construction algorithm: total distance = {:.2f}".format(distance_before))
 
+	if tour_file == None:
+		save_tour_to_file(tour, tour_filename)
+
+	plot_tour(tour)
+
+	min_improvement_percent = 0.00001
+	max_iterations = 100
+	print("Improving tour with local search with \nminimum improvement percent {} and maximum number of iterations {}...".format(
+		min_improvement_percent, max_iterations))
+	start_time = time.clock()
+	_2opt = two_opt(tour, max_iterations, min_improvement_percent)
+	end_time = time.clock()
+	
+	print("2-Opt took {:.3f} secs".format(end_time-start_time))
+	print("Before 2-opt: total distance = {:.2f} \nAfter  2-Opt: total distance = {:.2f}".format(
+		distance_before, total_distance(_2opt)))
+	plot_tour(_2opt)
+
+
+def save_tour_to_file(tour, tour_filename):
+	_LOGGER.info(" Writing tour to file.")
+	formatted_tour = ['%s %s %s' % (city.number, city.x, city.y) for city in tour]
+	tour_data = "\n".join(formatted_tour)  
+	open(tour_filename, "w+").write(tour_data)
 
 if __name__ == '__main__':
 	main()
