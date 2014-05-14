@@ -199,12 +199,12 @@ def main():
 		distance_before = total_distance(tour)
 		print("Construction algorithm: total distance = {:.2f}".format(distance_before))
 
-	if tour_file == None:
+	if cities:
 		save_tour_to_file(tour, tour_filename)
 
 	plot_tour(tour)
 
-	min_improvement_percent = 0.00001
+	min_improvement_percent = 0.000001
 	max_iterations = 100
 	print("Improving tour with local search with \nminimum improvement percent {} and maximum number of iterations {}...".format(
 		min_improvement_percent, max_iterations))
